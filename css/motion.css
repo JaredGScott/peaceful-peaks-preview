@@ -1,0 +1,157 @@
+/* Peaceful Peaks — living photos, tilt/sheen on clickable tiles, liquid-glass booking UI.
+   Everything here is switched off by prefers-reduced-motion at the bottom. */
+
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ---------- living photos: slow drift on every photo ---------- */
+@keyframes drift-a { from { transform: scale(1.09) translate3d(-1.6%, -1.1%, 0); } to { transform: scale(1.02) translate3d(1.4%, 1%, 0); } }
+@keyframes drift-b { from { transform: scale(1.03) translate3d(1.3%, -1.2%, 0); } to { transform: scale(1.1) translate3d(-1.1%, 1.4%, 0); } }
+@keyframes drift-c { from { transform: scale(1.1) translate3d(0, 1.6%, 0); } to { transform: scale(1.03) translate3d(0, -1.4%, 0); } }
+@keyframes drift-d { from { transform: scale(1.04) translate3d(-1.4%, 1.2%, 0); } to { transform: scale(1.11) translate3d(1.2%, -1%, 0); } }
+
+.live img { animation: drift-a 22s ease-in-out infinite alternate; animation-play-state: paused; will-change: transform; }
+.live.in-view img { animation-play-state: running; }
+.tile.live:nth-child(4n + 2) img, .g-item.live:nth-child(4n + 2) img { animation-name: drift-b; animation-duration: 26s; }
+.tile.live:nth-child(4n + 3) img, .g-item.live:nth-child(4n + 3) img { animation-name: drift-c; animation-duration: 24s; }
+.tile.live:nth-child(4n) img, .g-item.live:nth-child(4n) img { animation-name: drift-d; animation-duration: 28s; }
+
+/* stay cards: crossfading slideshow, the visible photo drifts */
+.stay-media img { transform: none; transition: opacity 1.6s var(--ease); animation: none; }
+.stay-media.live img.is-active { animation: drift-a 12s ease-in-out infinite alternate; animation-play-state: paused; }
+.stay-media.live.in-view img.is-active { animation-play-state: running; }
+.stay-card:nth-child(2n) .stay-media.live img.is-active { animation-name: drift-b; }
+.stay-card:nth-child(3n) .stay-media.live img.is-active { animation-name: drift-c; }
+.stay-card:nth-child(4n) .stay-media.live img.is-active { animation-name: drift-d; }
+.car-dots i.on { transition: background-color .3s, transform .5s cubic-bezier(.34, 1.56, .64, 1), width .5s var(--ease); width: 16px; border-radius: 4px; transform: none; }
+
+/* ---------- clickable photo tiles: 3D tilt + light sheen ---------- */
+.g-item { position: relative; }
+[data-tilt] {
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--ts, 1));
+  transition: transform .9s var(--ease), box-shadow .9s var(--ease);
+  transform-style: preserve-3d;
+}
+[data-tilt].is-tilting { transition: transform .18s ease-out, box-shadow .6s var(--ease); --ts: 1.015; box-shadow: 0 24px 50px rgba(18, 32, 24, .22); }
+[data-tilt]::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 46%);
+  mix-blend-mode: soft-light; opacity: 0; transition: opacity .6s var(--ease);
+}
+[data-tilt].is-tilting::after { opacity: 1; }
+@media (min-width: 901px) {
+  .gallery { overflow: visible; }
+  .gallery .g-item { border-radius: 6px; overflow: hidden; }
+  .gallery .g-0 { border-radius: var(--radius) 6px 6px var(--radius); }
+  .gallery .g-2 { border-top-right-radius: var(--radius); }
+  .gallery .g-4 { border-bottom-right-radius: var(--radius); }
+}
+
+/* ---------- buttons: light sweep ---------- */
+.btn { position: relative; overflow: hidden; isolation: isolate; }
+.btn::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, .26) 50%, transparent 68%);
+  transform: translateX(-130%); transition: transform 1.1s var(--ease);
+}
+.btn:hover::before { transform: translateX(130%); }
+.btn.g-all { position: absolute; }
+.btn-ghost::before, .btn-light::before { background: linear-gradient(115deg, transparent 32%, color-mix(in srgb, var(--accent) 16%, transparent) 50%, transparent 68%); }
+.search-go { position: relative; overflow: hidden; }
+
+/* ---------- liquid glass ---------- */
+@property --ga { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes rim-spin { to { --ga: 360deg; } }
+
+.glass {
+  position: relative; isolation: isolate;
+  background: linear-gradient(150deg, rgba(255, 255, 255, .74) 0%, rgba(255, 255, 255, .52) 48%, rgba(255, 255, 255, .4) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
+  backdrop-filter: blur(22px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, .55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    inset 0 -1px 0 rgba(255, 255, 255, .35),
+    inset 0 0 34px rgba(255, 255, 255, .22),
+    0 30px 80px rgba(18, 32, 24, .26),
+    0 2px 8px rgba(18, 32, 24, .08);
+}
+.refract .glass { -webkit-backdrop-filter: url(#lg-refract) blur(16px) saturate(1.8); backdrop-filter: url(#lg-refract) blur(16px) saturate(1.8); }
+/* specular highlight that follows the pointer */
+.glass::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(460px circle at var(--gx, 18%) var(--gy, -8%), rgba(255, 255, 255, .7), rgba(255, 255, 255, 0) 52%);
+  mix-blend-mode: overlay; transition: opacity .6s;
+}
+/* liquid-crystal rim: slowly rotating cool iridescence */
+.glass::after {
+  content: ""; position: absolute; inset: -1px; z-index: -1; pointer-events: none; border-radius: inherit; padding: 1.4px;
+  background: conic-gradient(from var(--ga), rgba(255, 255, 255, .95), rgba(176, 228, 210, .85), rgba(184, 210, 255, .85), rgba(214, 200, 255, .8), rgba(255, 255, 255, .95), rgba(176, 228, 210, .85), rgba(255, 255, 255, .95));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: rim-spin 16s linear infinite;
+}
+
+/* photo stage the glass floats over */
+.glass-stage { position: relative; padding: 18px; }
+.stage-media { position: absolute; inset: 0; z-index: 0; border-radius: 30px; overflow: hidden; background: var(--dark); }
+.stage-media img { width: 100%; height: 100%; object-fit: cover; }
+.stage-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 18, 14, .05), rgba(10, 18, 14, .28)); }
+.glass-stage > .glass { z-index: 1; }
+.stage-media img { animation-duration: 30s; }
+
+/* booking card */
+.book-card { position: relative; top: auto; }
+.book-card.glass { border-radius: 24px; padding: 26px; }
+.book-stage { position: sticky; top: calc(var(--header-h) + 20px); }
+.book-card.glass .book-fields { background: rgba(255, 255, 255, .5); border-color: rgba(255, 255, 255, .8); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(18, 32, 24, .06); }
+.book-card.glass .bf-in, .book-card.glass .bf-guests { border-color: rgba(18, 32, 24, .1); }
+.book-card.glass .book-price strong { color: var(--ink); }
+
+/* inline calendar */
+.cal-stage { max-width: 760px; padding: 22px; }
+.cal-inline.glass { border-radius: 24px; padding: 24px 26px 16px; max-width: none; background: linear-gradient(150deg, rgba(255, 255, 255, .84) 0%, rgba(255, 255, 255, .66) 55%, rgba(255, 255, 255, .58) 100%); }
+
+/* date popovers & request modal */
+.range-pop.glass { background: linear-gradient(150deg, rgba(255, 255, 255, .84), rgba(255, 255, 255, .66)); border-radius: 28px; }
+.modal-card.glass { background: linear-gradient(150deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .7)); }
+.modal-card.glass .form-grid input, .modal-card.glass .form-grid select, .modal-card.glass .form-grid textarea { background: rgba(255, 255, 255, .7); }
+
+/* liquid calendar days */
+.cal-day { isolation: isolate; transition: transform .45s cubic-bezier(.34, 1.56, .64, 1), background-color .25s, color .25s, box-shadow .3s; }
+.cal-day:hover:not(:disabled) { box-shadow: inset 0 1px 0 #fff, 0 6px 16px rgba(18, 32, 24, .14); background: rgba(255, 255, 255, .78); transform: scale(1.1); }
+.cal-day.is-start, .cal-day.is-end {
+  color: #fff;
+  background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--accent) 45%, #fff) 0%, var(--accent) 46%, var(--ink) 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .5), inset 0 -3px 6px rgba(0, 0, 0, .25), 0 8px 18px color-mix(in srgb, var(--accent) 45%, transparent);
+  animation: droplet .6s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.cal-day.is-start:hover, .cal-day.is-end:hover { background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--accent) 45%, #fff) 0%, var(--accent) 46%, var(--ink) 100%); }
+@keyframes droplet {
+  0% { transform: scale(.35); border-radius: 42% 58% 60% 40% / 55% 45% 55% 45%; }
+  55% { transform: scale(1.14); border-radius: 55% 45% 48% 52% / 46% 54% 46% 54%; }
+  100% { transform: scale(1); border-radius: 50%; }
+}
+.cal-day.in-range { background: transparent; border-radius: 0; }
+.cal-day.in-range::before {
+  content: ""; position: absolute; inset: 5px -1px; z-index: -1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .8), color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, .45)));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 color-mix(in srgb, var(--accent) 14%, transparent);
+  transform-origin: left center;
+  animation: flow .55s var(--ease) both; animation-delay: calc(var(--i, 0) * 24ms);
+}
+@keyframes flow { from { transform: scaleX(0); opacity: 0; } }
+
+@media (max-width: 900px) {
+  .book-stage { position: static; padding: 14px; }
+  .cal-stage { padding: 14px; }
+  .cal-inline.glass { padding: 18px 14px 12px; }
+  .range-pop.glass { border-radius: 28px 28px 0 0; }
+  .gallery .g-item { border-radius: var(--radius-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live img, .stay-media.live img.is-active, .stage-media img { animation: none !important; transform: none !important; }
+  [data-tilt] { transform: none !important; }
+  .glass::after, .cal-day.is-start, .cal-day.is-end, .cal-day.in-range::before { animation: none !important; }
+  .refract .glass { -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8); }
+}
