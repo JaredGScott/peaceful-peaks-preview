@@ -235,17 +235,9 @@
       if (!this.pop) return;
       // On phones the picker is a fixed bottom sheet. A glass (backdrop-filter) ancestor
       // would become its containing block, so move it to <body> while it's a sheet.
-      this.home = this.home || this.pop.parentElement;
-      const host = innerWidth <= 900 ? document.body : this.home;
-      if (this.pop.parentElement !== host) host.appendChild(this.pop);
       this.pop.hidden = false;
       this.render();
-      // keep the whole calendar on screen (desktop popovers open below their field)
-      if (innerWidth > 900) {
-        const r = this.pop.getBoundingClientRect();
-        const over = r.bottom - innerHeight + 24;
-        if (over > 0) scrollBy({ top: over, behavior: reduced ? "auto" : "smooth" });
-      }
+      mount(this);
     }
     close() { if (this.pop) this.pop.hidden = true; }
     sync() {
@@ -313,7 +305,7 @@
         <div class="cal-foot"><span class="cal-msg">${this.msg}</span><span><button type="button" data-clear>Clear dates</button>${withFoot ? ' <button type="button" class="cal-close" data-close>Close</button>' : ""}</span></div>`;
     }
     render() {
-      if (this.pop && !this.pop.hidden) this.pop.innerHTML = this.html(true);
+      if (this.pop && !this.pop.hidden) { this.pop.innerHTML = this.html(true); if (this.home && typeof place === "function") place(this); }
       if (this.inline) this.inline.innerHTML = this.html(false);
     }
   }
@@ -323,11 +315,42 @@
   const closeOthers = (me) => openPickers.forEach((p) => p !== me && p.close());
   // On phones pickers are fixed bottom sheets. A glass (backdrop-filter) ancestor would
   // become their containing block, so they move to <body> while shown as a sheet.
+  // Every dropdown lives on <body> and is pinned to the screen, so nothing on the page
+  // (sticky header, glass cards, later sections) can cover or clip it. Desktop: anchored
+  // under its field, flipped above when there's no room, never under the header, and
+  // scrollable inside if taller than the screen. Phones: a bottom sheet (CSS).
+  const floating = new Set();
+  const place = (picker) => {
+    const pop = picker.pop;
+    if (pop.hidden) return;
+    if (innerWidth <= 900) { pop.classList.remove("is-floating"); pop.removeAttribute("style"); return; }
+    pop.classList.add("is-floating");
+    const a = (picker.anchor || picker.home).getBoundingClientRect();
+    const gap = 10, edge = 16, headerH = document.querySelector("[data-header]")?.getBoundingClientRect().bottom || 0;
+    const width = Math.min(picker.popWidth ? picker.popWidth(a) : a.width, innerWidth - edge * 2);
+    let left = picker.alignRight ? a.right - width : a.left;
+    left = Math.max(edge, Math.min(left, innerWidth - width - edge));
+    pop.style.width = `${width}px`;
+    pop.style.left = `${left}px`;
+    pop.style.maxHeight = "";
+    const h = pop.scrollHeight + (pop.offsetHeight - pop.clientHeight); // include borders
+    // open under the field; if it would run off the bottom, slide it up so it shows in full
+    // (it may then cover its own field), never above the header; scroll inside only if
+    // it's taller than the whole space under the header
+    const minTop = Math.max(headerH, 0) + gap;
+    const top = Math.max(minTop, Math.min(a.bottom + gap, innerHeight - edge - h));
+    pop.style.top = `${top}px`;
+    pop.style.maxHeight = `${innerHeight - edge - top}px`;
+  };
   const mount = (picker) => {
     picker.home = picker.home || picker.pop.parentElement;
-    const host = innerWidth <= 900 ? document.body : picker.home;
-    if (picker.pop.parentElement !== host) host.appendChild(picker.pop);
+    if (picker.pop.parentElement !== document.body) document.body.appendChild(picker.pop);
+    floating.add(picker);
+    place(picker);
   };
+  const reflow = () => floating.forEach(place);
+  addEventListener("scroll", reflow, { passive: true });
+  addEventListener("resize", reflow);
   const origOpen = RangePicker.prototype.open, origClose = RangePicker.prototype.close;
   RangePicker.prototype.open = function () { closeOthers(this); openPickers.add(this); origOpen.call(this); };
   RangePicker.prototype.close = function () { openPickers.delete(this); origClose.call(this); };
@@ -385,7 +408,7 @@
         ${s.pets ? `<div class="pet-sizes"><p class="muted small">What size is each dog?</p>${s.sizes.map((z, i) => this.sizeChips(i, z)).join("")}</div>` : ""}
         <div class="cal-foot"><span></span><span><button type="button" class="cal-close" data-g-close>Done</button></span></div>`;
     }
-    render() { if (!this.pop.hidden) this.pop.innerHTML = this.html(); }
+    render() { if (!this.pop.hidden) { this.pop.innerHTML = this.html(); if (this.home) place(this); } }
     handle(e) {
       const b = e.target.closest("button"); if (!b) return;
       e.stopPropagation();
@@ -426,6 +449,8 @@
       getUnit: () => stay.value,
     });
     const who = new GuestPicker({ trigger: $("[data-guest-trigger]", search), pop: $("[data-guest-pop]", search), label: $("[data-guest-label]", search), max: 8 });
+    picker.anchor = search; picker.popWidth = (a) => Math.min(a.width, 760);
+    who.anchor = search; who.alignRight = true; who.popWidth = () => 420;
     availReady.then(() => picker.render());
     stay.addEventListener("change", () => picker.set(null, null));
     search.addEventListener("submit", (e) => {
@@ -503,6 +528,9 @@
       trigger: $("[data-guest-trigger]", card), pop: $("[data-guest-pop]", card), label: $("[data-guest-label]", card),
       max: unit.guests || 6, onChange: () => { if (guests && !modal.hidden) renderCheckout(); },
     });
+    const fields = $(".book-fields", card);
+    picker.anchor = fields; picker.alignRight = true; picker.popWidth = () => 700;
+    guests.anchor = fields; guests.alignRight = true; guests.popWidth = (a) => Math.max(a.width + 48, 400);
     guests.fromQuery(params);
     availReady.then(() => {
       if (validIso(qIn) && validIso(qOut) && qOut > qIn && picker.rangeOk(qIn, qOut)) { picker.view = new Date(parse(qIn).getFullYear(), parse(qIn).getMonth(), 1); picker.set(qIn, qOut); }

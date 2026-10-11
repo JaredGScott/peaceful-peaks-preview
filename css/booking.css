@@ -91,3 +91,9 @@
   .chip { min-width: 0; }
 }
 .modal-card { overflow-x: hidden; }
+
+/* dropdowns pinned to the screen on desktop (positioned by main.js) */
+.range-pop.is-floating, .guest-pop.is-floating {
+  position: fixed !important; z-index: 80; right: auto; bottom: auto;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+}
