@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/styles.css">
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/themes.css">
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/motion.css">
+<link rel="stylesheet" href="/peaceful-peaks-preview/css/booking.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Campground","name":"Peaceful Peaks Glamping","description":"Peaceful Peaks Glamping is a hidden gem in Colorado, offering a quiet getaway in glamping tents and a convertible A-frame cabin. With stargazing views and a chance to reconnect with nature, it's the perfect escape for those seeking tranquility.","email":"peacefulpeaksglamping@gmail.com","telephone":"719-859-2774","address":{"@type":"PostalAddress","addressLocality":"Boncarbo","addressRegion":"CO","postalCode":"81024","addressCountry":"US"},"url":"https://peacefulpeaksglamping.com","image":"https://peacefulpeaksglamping.com/images/white-tent/web/white-tent-exterior-pines-1600.jpg"}</script>
 <script>
 document.documentElement.classList.add('js');
@@ -55,7 +56,7 @@ document.documentElement.classList.add('js');
       <a href="/peaceful-peaks-preview/location/">Location</a>
       <a href="/peaceful-peaks-preview/faq/">FAQ</a>
     </nav>
-    <a class="btn btn-primary btn-sm header-cta" href="/peaceful-peaks-preview/#stays">Book your stay</a>
+    <a class="btn btn-primary btn-sm header-cta" href="#book" data-open-dates>Check availability</a>
     <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" data-nav-toggle><span></span><span></span></button>
   </div>
   <div class="mobile-nav" data-mobile-nav hidden>
@@ -63,7 +64,7 @@ document.documentElement.classList.add('js');
     <a href="/peaceful-peaks-preview/#experience">The experience</a>
     <a href="/peaceful-peaks-preview/location/">Location</a>
     <a href="/peaceful-peaks-preview/faq/">FAQ</a>
-    <a class="btn btn-primary" href="/peaceful-peaks-preview/#stays">Book your stay</a>
+    <a class="btn btn-primary" href="#book" data-open-dates>Check availability</a>
   </div>
 </header>
 <main id="main">
@@ -124,17 +125,17 @@ document.documentElement.classList.add('js');
     <div class="glass-stage book-stage live">
     <div class="stage-media" aria-hidden="true"><img src="/peaceful-peaks-preview/images/scenic/web/ridge-view-blue-sky-1600.jpg" alt="" decoding="async"></div>
     <div class="book-card glass" data-book data-unit="cloudscape-retreat" id="book">
-      <p class="book-price"><strong>Request dates</strong></p>
+      <p class="book-price"><strong>$125</strong> night</p>
       <div class="book-fields">
         <button type="button" class="bf bf-in" data-range-trigger><span>Check-in</span><b data-range-in>Add date</b></button>
         <button type="button" class="bf bf-out" data-range-trigger><span>Checkout</span><b data-range-out>Add date</b></button>
-        <label class="bf bf-guests"><span>Guests</span>
-          <select data-book-guests><option value="1">1 guest</option><option value="2" selected>2 guests</option><option value="3">3 guests</option><option value="4">4 guests</option><option value="5">5 guests</option><option value="6">6 guests</option></select>
-        </label>
+        <button type="button" class="bf bf-guests" data-guest-trigger><span>Guests &amp; pets</span><b class="has-value" data-guest-label>2 guests</b><svg class="icon bf-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
         <div class="range-pop glass" data-range-pop hidden></div>
+        <div class="guest-pop glass" data-guest-pop hidden></div>
       </div>
-      <button class="btn btn-primary btn-block" type="button" data-book-request>Request to book</button>
-      <p class="book-note" data-book-note>You won't be charged yet. Colita will confirm your dates and total.</p>
+      <button class="btn btn-primary btn-block" type="button" data-book-request>Reserve</button>
+      <p class="book-note" data-book-note>You won't be charged yet.</p>
+      <p class="sample-note">Sample rates shown for this preview</p>
       <div class="book-break" data-book-break hidden></div>
     </div>
     </div>
@@ -162,7 +163,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Panoramic Paradise</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">Glamping tent · Boncarbo, Colorado · Sleeps 2</p>
     <p class="stay-sum">A cozy red canvas bell tent on its own wooden platform, with a picnic table, fire pit and wide-open sky.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$95</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
 <article class="stay-card" data-reveal="up" style="--d:90ms">
@@ -177,7 +178,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Peak View Retreat</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">A-frame cabin · Boncarbo, Colorado</p>
     <p class="stay-sum">A hand-built red-cedar A-frame with a green roof, a deck that looks out over the ridges and a propane fire table out front.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$165</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
 <article class="stay-card" data-reveal="up" style="--d:180ms">
@@ -192,39 +193,83 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Premier Luxury Tent</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">Luxury glamping tent · Trinidad, Colorado</p>
     <p class="stay-sum">Our biggest bell tent: a red bed, a bear-and-paw-print rug, round windows, poufs, plants and room to spread out.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$185</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article></div>
 </section>
 
 <div class="mobile-book">
-  <p><strong>Request dates</strong><small data-mobile-dates>Add dates</small></p>
-  <a class="btn btn-primary" href="#book" data-mobile-book>Request</a>
+  <p><strong>$125</strong> night<small data-mobile-dates>Add dates</small></p>
+  <a class="btn btn-primary" href="#book" data-mobile-book>Reserve</a>
 </div>
 
-<div class="modal" data-request-modal hidden role="dialog" aria-modal="true" aria-labelledby="req-title">
-  <div class="modal-card glass">
+<div class="modal" data-request-modal hidden role="dialog" aria-modal="true" aria-labelledby="co-title">
+  <div class="modal-card glass checkout">
     <button class="modal-close" type="button" data-modal-close aria-label="Close"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    <form data-request-form novalidate>
-      <h2 id="req-title">Request to book</h2>
-      <p class="req-summary" data-req-summary></p>
-      <div class="form-grid">
-        <label>Full name<input name="name" autocomplete="name" required></label>
-        <label>Email<input name="email" type="email" autocomplete="email" required></label>
-        <label>Phone<input name="phone" type="tel" autocomplete="tel"></label>
-        <label>Pets coming?<select name="pets"><option>No</option><option>Yes</option></select></label>
-        <label class="full">Anything we should know?<textarea name="message" rows="3" placeholder="Celebrating something? Arriving late? Tell us."></textarea></label>
-        <label class="check full"><input type="checkbox" name="agree" required> I agree to the <a href="/peaceful-peaks-preview/legal/terms/" target="_blank">Terms</a>, <a href="/peaceful-peaks-preview/legal/house-rules/" target="_blank">House Rules</a> and <a href="/peaceful-peaks-preview/legal/cancellation/" target="_blank">Cancellation Policy</a>.</label>
+    <ol class="co-steps" aria-label="Checkout steps"><li data-dot="1" class="on">Details</li><li data-dot="2">Payment</li><li data-dot="3">Confirmed</li></ol>
+    <div class="co-grid">
+      <div class="co-main">
+        <form data-step="1" data-details-form novalidate>
+          <h2 id="co-title">Confirm your trip</h2>
+          <div class="co-trip">
+            <div><strong>Dates</strong><span data-co-dates></span></div>
+            <div><strong>Guests</strong><span data-co-guests></span></div>
+          </div>
+          <div class="co-pets" data-co-pets hidden>
+            <h3>Your dogs</h3>
+            <p class="muted small">Dogs are welcome. Pick a size for each so we can set up the site.</p>
+            <div data-co-pet-rows></div>
+          </div>
+          <h3>Your details</h3>
+          <div class="form-grid">
+            <label>Full name<input name="name" autocomplete="name" required></label>
+            <label>Email<input name="email" type="email" autocomplete="email" required></label>
+            <label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>
+            <label>Arrival time<select name="arrival"><option>Afternoon</option><option>Evening</option><option>Not sure yet</option></select></label>
+            <label class="full">Anything we should know?<textarea name="message" rows="2" placeholder="Celebrating something? Arriving late? Tell us."></textarea></label>
+            <label class="check full"><input type="checkbox" name="agree" required> I agree to the <a href="/peaceful-peaks-preview/legal/terms/" target="_blank">Terms</a>, <a href="/peaceful-peaks-preview/legal/house-rules/" target="_blank">House Rules</a> and <a href="/peaceful-peaks-preview/legal/cancellation/" target="_blank">Cancellation Policy</a>.</label>
+          </div>
+          <p class="form-error" data-form-error hidden></p>
+          <button class="btn btn-primary btn-block" type="submit">Continue to payment <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+
+        <form data-step="2" data-pay-form novalidate hidden autocomplete="off">
+          <h2>Payment</h2>
+          <p class="preview-banner">Preview mode: payments aren’t connected yet, so no card is charged or sent anywhere.</p>
+          <div class="wallets">
+            <button type="button" class="wallet" data-wallet>Apple&nbsp;Pay</button>
+            <button type="button" class="wallet" data-wallet>Google&nbsp;Pay</button>
+          </div>
+          <div class="or"><span>or pay with card</span></div>
+          <div class="card-box">
+            <label class="cb-full">Card number<input name="cc" inputmode="numeric" placeholder="1234 1234 1234 1234" maxlength="19" data-cc></label>
+            <label>Expiry<input name="exp" inputmode="numeric" placeholder="MM / YY" maxlength="7" data-exp></label>
+            <label>CVC<input name="cvc" inputmode="numeric" placeholder="123" maxlength="4" data-cvc></label>
+            <label class="cb-full">Name on card<input name="ccname" placeholder="Full name"></label>
+            <label class="cb-full">Billing ZIP<input name="zip" inputmode="numeric" placeholder="81024" maxlength="10"></label>
+          </div>
+          <p class="form-error" data-pay-error hidden></p>
+          <button class="btn btn-primary btn-block" type="submit" data-pay-btn>Pay</button>
+          <button class="link-btn" type="button" data-back><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg> Back to details</button>
+          <p class="book-note">Secure checkout. Your card details are encrypted by our payment processor.</p>
+        </form>
+
+        <div data-step="3" class="co-done" hidden>
+          <svg class="icon done-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg>
+          <h2>You're booked!</h2>
+          <p data-done-text></p>
+          <button class="btn btn-ghost" type="button" data-modal-close>Done</button>
+        </div>
       </div>
-      <p class="form-error" data-form-error hidden></p>
-      <button class="btn btn-primary btn-block" type="submit">Send request</button>
-      <p class="book-note">No payment now. Colita replies by email to confirm.</p>
-    </form>
-    <div class="req-done" data-req-done hidden>
-      <svg class="icon done-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg>
-      <h2>Request sent</h2>
-      <p>Thank you! Colita will be in touch soon to confirm your stay.</p>
-      <button class="btn btn-ghost" type="button" data-modal-close>Close</button>
+
+      <aside class="co-summary">
+        <div class="co-unit">
+          <img src="/peaceful-peaks-preview/images/white-tent/web/white-tent-exterior-pines-800.jpg" alt="" loading="lazy">
+          <div><strong>Cloudscape Retreat</strong><small>The White Tent · Boncarbo, Colorado</small></div>
+        </div>
+        <div class="co-lines" data-co-lines></div>
+        <p class="sample-note">Sample rates shown for this preview</p>
+      </aside>
     </div>
   </div>
 </div>
@@ -268,7 +313,7 @@ document.documentElement.classList.add('js');
   <button class="lightbox-nav next" type="button" data-lightbox-next aria-label="Next photo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
   <div class="lightbox-count" data-lightbox-count></div>
 </div>
-<script>window.PP = {"base":"/peaceful-peaks-preview","endpoint":"/api/booking-request","email":"peacefulpeaksglamping@gmail.com","units":[{"slug":"panoramic-paradise","name":"Panoramic Paradise","price":null,"cleaningFee":null,"minNights":null,"guests":2},{"slug":"cloudscape-retreat","name":"Cloudscape Retreat","price":null,"cleaningFee":null,"minNights":null,"guests":null},{"slug":"peak-view-retreat","name":"Peak View Retreat","price":null,"cleaningFee":null,"minNights":null,"guests":null},{"slug":"premier-luxury-tent","name":"Premier Luxury Tent","price":null,"cleaningFee":null,"minNights":null,"guests":null}]};</script>
+<script>window.PP = {"base":"/peaceful-peaks-preview","endpoint":"/api/booking-request","email":"peacefulpeaksglamping@gmail.com","paymentsLive":false,"maxPets":2,"petSizes":[["small","Small","under 25 lb"],["medium","Medium","25–50 lb"],["large","Large","50+ lb"]],"units":[{"slug":"panoramic-paradise","name":"Panoramic Paradise","price":95,"cleaningFee":25,"minNights":null,"guests":2},{"slug":"cloudscape-retreat","name":"Cloudscape Retreat","price":125,"cleaningFee":25,"minNights":null,"guests":null},{"slug":"peak-view-retreat","name":"Peak View Retreat","price":165,"cleaningFee":35,"minNights":null,"guests":null},{"slug":"premier-luxury-tent","name":"Premier Luxury Tent","price":185,"cleaningFee":35,"minNights":null,"guests":null}]};</script>
 <script src="/peaceful-peaks-preview/js/main.js" defer></script>
 </body>
 </html>

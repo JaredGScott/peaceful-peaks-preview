@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/styles.css">
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/themes.css">
 <link rel="stylesheet" href="/peaceful-peaks-preview/css/motion.css">
+<link rel="stylesheet" href="/peaceful-peaks-preview/css/booking.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Campground","name":"Peaceful Peaks Glamping","description":"Peaceful Peaks Glamping is a hidden gem in Colorado, offering a quiet getaway in glamping tents and a convertible A-frame cabin. With stargazing views and a chance to reconnect with nature, it's the perfect escape for those seeking tranquility.","email":"peacefulpeaksglamping@gmail.com","telephone":"719-859-2774","address":{"@type":"PostalAddress","addressLocality":"Boncarbo","addressRegion":"CO","postalCode":"81024","addressCountry":"US"},"url":"https://peacefulpeaksglamping.com","image":"https://peacefulpeaksglamping.com/images/hero/web/hero-1600.jpg"}</script>
 <script>
 document.documentElement.classList.add('js');
@@ -92,14 +93,12 @@ document.documentElement.classList.add('js');
   <button class="search-field search-dates" type="button" data-range-trigger>
     <span>Check out</span><b data-range-out>Add dates</b>
   </button>
-  <label class="search-field">
-    <span>Guests</span>
-    <select name="guests" data-search-guests>
-      <option value="1">1 guest</option><option value="2" selected>2 guests</option><option value="3">3 guests</option><option value="4">4 guests</option><option value="5">5 guests</option><option value="6">6 guests</option>
-    </select>
-  </label>
+  <button class="search-field search-guests" type="button" data-guest-trigger>
+    <span>Who</span><b data-guest-label>2 guests</b>
+  </button>
   <button class="search-go" type="submit" aria-label="Search"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span>Search</span></button>
   <div class="range-pop glass" data-range-pop hidden></div>
+  <div class="guest-pop glass" data-guest-pop hidden></div>
 </form></div>
   </div>
   <a class="hero-scroll" href="#stays" aria-label="Scroll to stays"><span></span></a>
@@ -126,7 +125,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Panoramic Paradise</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">Glamping tent · Boncarbo, Colorado · Sleeps 2</p>
     <p class="stay-sum">A cozy red canvas bell tent on its own wooden platform, with a picnic table, fire pit and wide-open sky.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$95</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
 <article class="stay-card" data-reveal="up" style="--d:90ms">
@@ -141,7 +140,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Cloudscape Retreat</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">Glamping tent · Boncarbo, Colorado</p>
     <p class="stay-sum">A white canvas bell tent on a raised wood deck, with a fire pit and chairs set out on the rock.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$125</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
 <article class="stay-card" data-reveal="up" style="--d:180ms">
@@ -156,7 +155,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Peak View Retreat</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">A-frame cabin · Boncarbo, Colorado</p>
     <p class="stay-sum">A hand-built red-cedar A-frame with a green roof, a deck that looks out over the ridges and a propane fire table out front.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$165</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
 <article class="stay-card" data-reveal="up" style="--d:270ms">
@@ -171,7 +170,7 @@ document.documentElement.classList.add('js');
     <div class="stay-row"><h3>Premier Luxury Tent</h3><span class="stay-rating"><svg class="icon star-fill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3z"/></svg> Superhost</span></div>
     <p class="muted">Luxury glamping tent · Trinidad, Colorado</p>
     <p class="stay-sum">Our biggest bell tent: a red bed, a bear-and-paw-print rug, round windows, poufs, plants and room to spread out.</p>
-    <p class="stay-price"><strong>Request dates</strong> <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
+    <p class="stay-price"><strong>$185</strong> night <span class="stay-go">View stay <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></p>
   </a>
 </article>
     </div>
@@ -316,7 +315,7 @@ document.documentElement.classList.add('js');
   <button class="lightbox-nav next" type="button" data-lightbox-next aria-label="Next photo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
   <div class="lightbox-count" data-lightbox-count></div>
 </div>
-<script>window.PP = {"base":"/peaceful-peaks-preview","endpoint":"/api/booking-request","email":"peacefulpeaksglamping@gmail.com","units":[{"slug":"panoramic-paradise","name":"Panoramic Paradise","price":null,"cleaningFee":null,"minNights":null,"guests":2},{"slug":"cloudscape-retreat","name":"Cloudscape Retreat","price":null,"cleaningFee":null,"minNights":null,"guests":null},{"slug":"peak-view-retreat","name":"Peak View Retreat","price":null,"cleaningFee":null,"minNights":null,"guests":null},{"slug":"premier-luxury-tent","name":"Premier Luxury Tent","price":null,"cleaningFee":null,"minNights":null,"guests":null}]};</script>
+<script>window.PP = {"base":"/peaceful-peaks-preview","endpoint":"/api/booking-request","email":"peacefulpeaksglamping@gmail.com","paymentsLive":false,"maxPets":2,"petSizes":[["small","Small","under 25 lb"],["medium","Medium","25–50 lb"],["large","Large","50+ lb"]],"units":[{"slug":"panoramic-paradise","name":"Panoramic Paradise","price":95,"cleaningFee":25,"minNights":null,"guests":2},{"slug":"cloudscape-retreat","name":"Cloudscape Retreat","price":125,"cleaningFee":25,"minNights":null,"guests":null},{"slug":"peak-view-retreat","name":"Peak View Retreat","price":165,"cleaningFee":35,"minNights":null,"guests":null},{"slug":"premier-luxury-tent","name":"Premier Luxury Tent","price":185,"cleaningFee":35,"minNights":null,"guests":null}]};</script>
 <script src="/peaceful-peaks-preview/js/main.js" defer></script>
 </body>
 </html>

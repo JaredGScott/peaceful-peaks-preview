@@ -77,7 +77,7 @@
   } else lives.forEach((el) => el.classList.add("in-view"));
 
   /* ---------- liquid glass: Chromium can refract the backdrop through an SVG filter ---------- */
-  if (!reduced && navigator.userAgentData?.brands?.some((b) => b.brand === "Chromium")) document.documentElement.classList.add("refract");
+  // (an SVG-refraction backdrop filter was tried here; it made fixed sheets and the checkout render invisibly in Chrome, so it is off)
   if (reduced) $$(".svg-defs animate").forEach((a) => a.remove());
 
   /* ---------- tilt + sheen on clickable photos, highlight on glass ---------- */
@@ -318,8 +318,101 @@
     }
   }
 
+  // only one picker sheet/popover open at a time
+  const openPickers = new Set();
+  const closeOthers = (me) => openPickers.forEach((p) => p !== me && p.close());
+  // On phones pickers are fixed bottom sheets. A glass (backdrop-filter) ancestor would
+  // become their containing block, so they move to <body> while shown as a sheet.
+  const mount = (picker) => {
+    picker.home = picker.home || picker.pop.parentElement;
+    const host = innerWidth <= 900 ? document.body : picker.home;
+    if (picker.pop.parentElement !== host) host.appendChild(picker.pop);
+  };
+  const origOpen = RangePicker.prototype.open, origClose = RangePicker.prototype.close;
+  RangePicker.prototype.open = function () { closeOthers(this); openPickers.add(this); origOpen.call(this); };
+  RangePicker.prototype.close = function () { openPickers.delete(this); origClose.call(this); };
+
+  /* ---------- guests & dogs picker ---------- */
+  const SIZES = PP.petSizes || [];
+  class GuestPicker {
+    constructor({ trigger, pop, label, max = 6, maxPets = PP.maxPets || 2, onChange }) {
+      Object.assign(this, { trigger, pop, label, max, maxPets, onChange });
+      this.state = { adults: 2, children: 0, infants: 0, pets: 0, sizes: [] };
+      trigger.addEventListener("click", (e) => { e.stopPropagation(); this.pop.hidden ? this.open() : this.close(); });
+      pop.addEventListener("click", (e) => this.handle(e));
+      document.addEventListener("click", (e) => { if (!this.pop.hidden && !this.pop.contains(e.target) && !trigger.contains(e.target)) this.close(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !this.pop.hidden) this.close(); });
+      this.sync();
+    }
+    open() { closeOthers(this); openPickers.add(this); mount(this); this.pop.hidden = false; this.render(); }
+    close() { openPickers.delete(this); this.pop.hidden = true; }
+    get guests() { return this.state.adults + this.state.children; }
+    text() {
+      const s = this.state, g = this.guests;
+      const parts = [`${g} guest${g > 1 ? "s" : ""}`];
+      if (s.infants) parts.push(`${s.infants} infant${s.infants > 1 ? "s" : ""}`);
+      if (s.pets) parts.push(`${s.pets} dog${s.pets > 1 ? "s" : ""}`);
+      return parts.join(", ");
+    }
+    set(patch) {
+      const s = Object.assign(this.state, patch);
+      s.adults = Math.max(1, Math.min(s.adults, this.max - s.children));
+      s.children = Math.max(0, Math.min(s.children, this.max - s.adults));
+      s.infants = Math.max(0, Math.min(s.infants, 5));
+      s.pets = Math.max(0, Math.min(s.pets, this.maxPets));
+      s.sizes = Array.from({ length: s.pets }, (_, i) => s.sizes[i] || null);
+      this.sync();
+    }
+    sync() { if (this.label) this.label.textContent = this.text(); this.render(); this.onChange?.(this.state); }
+    row(key, title, sub, min, max) {
+      const v = this.state[key];
+      return `<div class="g-row"><div><strong>${title}</strong><small>${sub}</small></div><div class="stepper">
+        <button type="button" data-k="${key}" data-d="-1" aria-label="Fewer ${title.toLowerCase()}" ${v <= min ? "disabled" : ""}>−</button>
+        <output aria-live="polite">${v}</output>
+        <button type="button" data-k="${key}" data-d="1" aria-label="More ${title.toLowerCase()}" ${v >= max ? "disabled" : ""}>+</button></div></div>`;
+    }
+    sizeChips(i, z) {
+      return `<div class="pet-size"><span>Dog ${i + 1}</span><div class="chips">${SIZES.map(([k, n, w]) =>
+        `<button type="button" class="chip${z === k ? " on" : ""}" data-pet="${i}" data-size="${k}" aria-pressed="${z === k}">${n}<small>${w}</small></button>`).join("")}</div></div>`;
+    }
+    html() {
+      const s = this.state;
+      return `<div class="g-head"><strong>Who is coming?</strong><span class="muted">Up to ${this.max} guests</span></div>
+        ${this.row("adults", "Adults", "Ages 13+", 1, this.max - s.children)}
+        ${this.row("children", "Children", "Ages 2–12", 0, this.max - s.adults)}
+        ${this.row("infants", "Infants", "Under 2", 0, 5)}
+        ${this.row("pets", "Dogs", `Dogs welcome · up to ${this.maxPets}`, 0, this.maxPets)}
+        ${s.pets ? `<div class="pet-sizes"><p class="muted small">What size is each dog?</p>${s.sizes.map((z, i) => this.sizeChips(i, z)).join("")}</div>` : ""}
+        <div class="cal-foot"><span></span><span><button type="button" class="cal-close" data-g-close>Done</button></span></div>`;
+    }
+    render() { if (!this.pop.hidden) this.pop.innerHTML = this.html(); }
+    handle(e) {
+      const b = e.target.closest("button"); if (!b) return;
+      e.stopPropagation();
+      if (b.dataset.k) this.set({ [b.dataset.k]: this.state[b.dataset.k] + Number(b.dataset.d) });
+      else if (b.dataset.pet) { const sizes = [...this.state.sizes]; sizes[Number(b.dataset.pet)] = b.dataset.size; this.set({ sizes }); }
+      else if (b.dataset.gClose !== undefined) this.close();
+    }
+    fromQuery(q) {
+      const n = (k) => (q.get(k) !== null && q.get(k) !== "" && !isNaN(q.get(k)) ? Number(q.get(k)) : undefined);
+      const patch = {};
+      for (const k of ["adults", "children", "infants", "pets"]) if (n(k) !== undefined) patch[k] = n(k);
+      if (patch.adults === undefined && n("guests") !== undefined) patch.adults = n("guests");
+      const sizes = (q.get("dogs") || "").split(",").map((z) => (SIZES.some(([k]) => k === z) ? z : null));
+      if (sizes.some(Boolean)) patch.sizes = sizes;
+      this.set(patch);
+    }
+    toQuery(q) {
+      const s = this.state;
+      q.set("adults", s.adults);
+      if (s.children) q.set("children", s.children);
+      if (s.infants) q.set("infants", s.infants);
+      if (s.pets) { q.set("pets", s.pets); if (s.sizes.some(Boolean)) q.set("dogs", s.sizes.map((z) => z || "").join(",")); }
+    }
+  }
+
   const params = new URLSearchParams(location.search);
-  const qIn = params.get("in"), qOut = params.get("out"), qGuests = params.get("guests");
+  const qIn = params.get("in"), qOut = params.get("out");
 
   /* ---------- hero search ---------- */
   const search = $("[data-search]");
@@ -332,30 +425,67 @@
       outEl: $("[data-range-out]", search),
       getUnit: () => stay.value,
     });
+    const who = new GuestPicker({ trigger: $("[data-guest-trigger]", search), pop: $("[data-guest-pop]", search), label: $("[data-guest-label]", search), max: 8 });
     availReady.then(() => picker.render());
     stay.addEventListener("change", () => picker.set(null, null));
     search.addEventListener("submit", (e) => {
       e.preventDefault();
       const q = new URLSearchParams();
       if (picker.start && picker.end) { q.set("in", picker.start); q.set("out", picker.end); }
-      q.set("guests", $("[data-search-guests]", search).value);
+      who.toQuery(q);
       if (stay.value) { location.href = `${BASE}/stays/${stay.value}/?${q}`; return; }
       $$('#stays a[href*="/stays/"]').forEach((a) => { a.href = a.getAttribute("href").split("?")[0] + "?" + q; });
       document.getElementById("stays").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
     });
   }
 
-  /* ---------- booking card ---------- */
+  /* ---------- booking card + checkout ---------- */
   const card = $("[data-book]");
   if (card) {
     const slug = card.dataset.unit;
     const unit = unitBySlug[slug] || {};
-    const guestsSel = $("[data-book-guests]", card);
-    if (qGuests && guestsSel.querySelector(`option[value="${qGuests}"]`)) guestsSel.value = qGuests;
+    const modal = $("[data-request-modal]");
     const breakEl = $("[data-book-break]", card);
     const mobileDates = $("[data-mobile-dates]");
     const money = (n) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-    const picker = new RangePicker({
+    const longDate = (d) => fmt(d, { weekday: "short", month: "short", day: "numeric" });
+    let picker = null, guests = null;
+
+    const quote = () => {
+      const n = picker && picker.start && picker.end ? nightsBetween(picker.start, picker.end) : 0;
+      if (!n || !unit.price) return { n, total: null, lines: [] };
+      const stayCost = unit.price * n, clean = unit.cleaningFee || 0;
+      const lines = [[`${money(unit.price)} × ${n} night${n > 1 ? "s" : ""}`, money(stayCost)]];
+      if (clean) lines.push(["Cleaning fee", money(clean)]);
+      return { n, total: stayCost + clean, lines };
+    };
+    const renderBreak = () => {
+      const qd = quote();
+      if (qd.total === null) { breakEl.hidden = true; return; }
+      breakEl.innerHTML = qd.lines.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("") + `<div class="total"><span>Total before taxes</span><span>${money(qd.total)}</span></div>`;
+      breakEl.hidden = false;
+    };
+
+    // --- checkout pieces (declared before the pickers so their callbacks can use them)
+    const details = $("[data-details-form]", modal), pay = $("[data-pay-form]", modal), done = $("[data-step='3']", modal);
+    const err = $("[data-form-error]", modal), payErr = $("[data-pay-error]", modal), payBtn = $("[data-pay-btn]", modal);
+    const steps = [details, pay, done];
+    let step = 1;
+    const renderCheckout = () => {
+      const qd = quote();
+      $("[data-co-dates]", modal).textContent = picker.start && picker.end ? `${longDate(picker.start)} – ${longDate(picker.end)} · ${qd.n} night${qd.n > 1 ? "s" : ""}` : "";
+      $("[data-co-guests]", modal).textContent = guests.text();
+      $("[data-co-pets]", modal).hidden = !guests.state.pets;
+      $("[data-co-pet-rows]", modal).innerHTML = guests.state.sizes.map((z, i) => guests.sizeChips(i, z)).join("");
+      const lines = [...qd.lines];
+      if (guests.state.pets) lines.push([`${guests.state.pets} dog${guests.state.pets > 1 ? "s" : ""}`, "Welcome"]);
+      $("[data-co-lines]", modal).innerHTML = qd.total === null
+        ? `<p class="muted">Your total will be confirmed by your host.</p>`
+        : lines.map(([a, b]) => `<div><span>${a}</span><span>${b}</span></div>`).join("") + `<div class="total"><span>Total (USD)</span><span>${money(qd.total)}</span></div><p class="muted small">Taxes calculated at checkout.</p>`;
+      payBtn.textContent = qd.total === null ? "Request to book" : `Pay ${money(qd.total)}`;
+    };
+
+    picker = new RangePicker({
       pop: $("[data-range-pop]", card),
       inline: $("[data-cal-inline]"),
       triggers: $$("[data-range-trigger]", card),
@@ -365,62 +495,81 @@
       onChange: (a, b) => {
         const n = a && b ? nightsBetween(a, b) : 0;
         if (mobileDates) mobileDates.textContent = n ? `${fmt(a)} – ${fmt(b)} · ${n} night${n > 1 ? "s" : ""}` : "Add dates";
-        if (unit.price && n) {
-          const stayCost = unit.price * n, clean = unit.cleaningFee || 0;
-          breakEl.innerHTML = `<div><span>${money(unit.price)} × ${n} night${n > 1 ? "s" : ""}</span><span>${money(stayCost)}</span></div>${clean ? `<div><span>Cleaning fee</span><span>${money(clean)}</span></div>` : ""}<div class="total"><span>Total before taxes</span><span>${money(stayCost + clean)}</span></div>`;
-          breakEl.hidden = false;
-        } else breakEl.hidden = true;
+        renderBreak();
       },
     });
     for (const el of [$("[data-range-in]", card), $("[data-range-out]", card)]) el.dataset.ph = "Add date";
+    guests = new GuestPicker({
+      trigger: $("[data-guest-trigger]", card), pop: $("[data-guest-pop]", card), label: $("[data-guest-label]", card),
+      max: unit.guests || 6, onChange: () => { if (guests && !modal.hidden) renderCheckout(); },
+    });
+    guests.fromQuery(params);
     availReady.then(() => {
       if (validIso(qIn) && validIso(qOut) && qOut > qIn && picker.rangeOk(qIn, qOut)) { picker.view = new Date(parse(qIn).getFullYear(), parse(qIn).getMonth(), 1); picker.set(qIn, qOut); }
       else picker.sync();
     });
 
-    const modal = $("[data-request-modal]");
-    const form = $("[data-request-form]", modal);
-    const done = $("[data-req-done]", modal);
-    const err = $("[data-form-error]", modal);
-    const openModal = () => {
-      const n = nightsBetween(picker.start, picker.end);
-      $("[data-req-summary]", modal).textContent = `${unit.name} · ${fmt(picker.start, { weekday: "short", month: "short", day: "numeric" })} – ${fmt(picker.end, { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · ${n} night${n > 1 ? "s" : ""} · ${guestsSel.value} guest${guestsSel.value > 1 ? "s" : ""}`;
-      form.hidden = false; done.hidden = true; err.hidden = true;
-      modal.hidden = false; document.body.style.overflow = "hidden";
-      setTimeout(() => form.elements.name.focus(), 60);
+    const goStep = (n) => {
+      step = n;
+      steps.forEach((el, i) => (el.hidden = i !== n - 1));
+      $$("[data-dot]", modal).forEach((d) => d.classList.toggle("on", Number(d.dataset.dot) <= n));
+      $(".modal-card", modal).scrollTop = 0;
+      const first = steps[n - 1].querySelector("input, button");
+      if (innerWidth > 900) setTimeout(() => first?.focus({ preventScroll: true }), 60);
     };
-    const closeModal = () => { modal.hidden = true; document.body.style.overflow = ""; };
-    const request = () => {
-      if (!(picker.start && picker.end)) { picker.open(); return; }
-      openModal();
-    };
-    // stopPropagation: the picker's click-outside handler would otherwise close it at once
-    $("[data-book-request]", card).addEventListener("click", (e) => { e.stopPropagation(); request(); });
-    $("[data-mobile-book]")?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); request(); });
+    $("[data-co-pet-rows]", modal).addEventListener("click", (e) => {
+      const b = e.target.closest("[data-pet]"); if (!b) return;
+      const sizes = [...guests.state.sizes]; sizes[Number(b.dataset.pet)] = b.dataset.size; guests.set({ sizes });
+    });
+    const openModal = () => { renderCheckout(); err.hidden = true; payErr.hidden = true; goStep(step === 3 ? 1 : step); modal.hidden = false; document.body.style.overflow = "hidden"; };
+    const closeModal = () => { modal.hidden = true; document.body.style.overflow = ""; if (step === 3) { pay.reset(); step = 1; } };
+    const reserve = () => { if (!(picker.start && picker.end)) { picker.open(); return; } openModal(); };
+    // stopPropagation: a picker's click-outside handler would otherwise close it at once
+    $("[data-book-request]", card).addEventListener("click", (e) => { e.stopPropagation(); reserve(); });
+    $("[data-mobile-book]")?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); reserve(); });
     $$("[data-modal-close]", modal).forEach((b) => b.addEventListener("click", closeModal));
     modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+    $("[data-back]", modal).addEventListener("click", () => goStep(1));
 
-    form.addEventListener("submit", async (e) => {
+    details.addEventListener("submit", (e) => {
       e.preventDefault();
       err.hidden = true;
-      if (!form.checkValidity()) { err.textContent = "Please add your name, a valid email, and agree to the policies."; err.hidden = false; form.reportValidity(); return; }
-      const fd = Object.fromEntries(new FormData(form));
-      const payload = { unit: slug, unitName: unit.name, checkIn: picker.start, checkOut: picker.end, nights: nightsBetween(picker.start, picker.end), guests: Number(guestsSel.value), ...fd, agree: true };
-      const btn = form.querySelector('[type="submit"]');
-      btn.disabled = true; btn.textContent = "Sending…";
-      let ok = false;
-      try {
-        const r = await fetch(PP.endpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-        ok = r.ok;
-      } catch { ok = false; }
-      if (!ok) {
-        // Fallback until the booking endpoint is live: open a pre-filled email.
-        const body = `Stay: ${unit.name}\nDates: ${payload.checkIn} to ${payload.checkOut} (${payload.nights} nights)\nGuests: ${payload.guests}\nPets: ${fd.pets}\nName: ${fd.name}\nEmail: ${fd.email}\nPhone: ${fd.phone || ""}\n\n${fd.message || ""}`;
-        location.href = `mailto:${PP.email}?subject=${encodeURIComponent(`Booking request: ${unit.name}`)}&body=${encodeURIComponent(body)}`;
-      }
-      btn.disabled = false; btn.textContent = "Send request";
-      form.hidden = true; done.hidden = false;
+      if (guests.state.sizes.some((z) => !z)) { err.textContent = "Please choose a size for each dog."; err.hidden = false; return; }
+      if (!details.checkValidity()) { err.textContent = "Please add your name, email and phone, and agree to the policies."; err.hidden = false; details.reportValidity(); return; }
+      goStep(2);
+    });
+
+    // card field formatting (in preview mode the values never leave the page)
+    const digits = (v) => v.replace(/\D/g, "");
+    $("[data-cc]", pay).addEventListener("input", (e) => { e.target.value = digits(e.target.value).slice(0, 16).replace(/(\d{4})(?=\d)/g, "$1 "); });
+    $("[data-exp]", pay).addEventListener("input", (e) => { const d = digits(e.target.value).slice(0, 4); e.target.value = d.length > 2 ? `${d.slice(0, 2)} / ${d.slice(2)}` : d; });
+    $("[data-cvc]", pay).addEventListener("input", (e) => { e.target.value = digits(e.target.value).slice(0, 4); });
+    const luhn = (num) => { let sum = 0, dbl = false; for (let i = num.length - 1; i >= 0; i--) { let d = +num[i]; if (dbl) { d *= 2; if (d > 9) d -= 9; } sum += d; dbl = !dbl; } return sum % 10 === 0; };
+
+    const finish = async () => {
+      payBtn.disabled = true; const label = payBtn.textContent; payBtn.textContent = "Processing…";
+      const fd = Object.fromEntries(new FormData(details));
+      const qd = quote();
+      // booking details only, never card data
+      const payload = { unit: slug, unitName: unit.name, checkIn: picker.start, checkOut: picker.end, nights: qd.n, ...guests.state, total: qd.total, name: fd.name, email: fd.email, phone: fd.phone, arrival: fd.arrival, message: fd.message, paid: !!PP.paymentsLive };
+      try { await fetch(PP.endpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); } catch { /* endpoint not live yet */ }
+      await new Promise((r) => setTimeout(r, 1100));
+      payBtn.disabled = false; payBtn.textContent = label;
+      pay.reset();
+      $("[data-done-text]", modal).textContent = `${unit.name}, ${longDate(picker.start)} – ${longDate(picker.end)}. A confirmation is on its way to ${fd.email}.${PP.paymentsLive ? "" : " (Preview: no payment was taken.)"}`;
+      goStep(3);
+    };
+    $$("[data-wallet]", pay).forEach((b) => b.addEventListener("click", finish));
+    pay.addEventListener("submit", (e) => {
+      e.preventDefault();
+      payErr.hidden = true;
+      const f = Object.fromEntries(new FormData(pay));
+      const cc = digits(f.cc || ""), exp = digits(f.exp || ""), mm = Number(exp.slice(0, 2)), yy = Number(exp.slice(2, 4));
+      const now = new Date(), expOk = exp.length === 4 && mm >= 1 && mm <= 12 && (2000 + yy > now.getFullYear() || (2000 + yy === now.getFullYear() && mm >= now.getMonth() + 1));
+      const problem = cc.length < 13 || !luhn(cc) ? "Please check the card number." : !expOk ? "Please check the expiry date." : digits(f.cvc || "").length < 3 ? "Please check the security code." : !(f.ccname || "").trim() ? "Please add the name on the card." : digits(f.zip || "").length < 5 ? "Please add your billing ZIP code." : "";
+      if (problem) { payErr.textContent = problem; payErr.hidden = false; return; }
+      finish();
     });
   }
 
@@ -433,3 +582,17 @@
     } catch { /* cancelled */ }
   });
 })();
+
+/* "Check availability" in the header on stay pages: open the date picker in place
+   instead of sending people back to the home page */
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-open-dates]");
+  if (!a) return;
+  const trigger = document.querySelector("[data-book] [data-range-trigger]");
+  if (!trigger) return;
+  e.preventDefault(); e.stopPropagation();
+  const nav = document.querySelector("[data-mobile-nav]");
+  if (nav && !nav.hidden) { nav.hidden = true; document.querySelector("[data-nav-toggle]")?.setAttribute("aria-expanded", "false"); }
+  if (innerWidth > 900) document.getElementById("book")?.scrollIntoView({ block: "center" });
+  setTimeout(() => trigger.click(), innerWidth > 900 ? 350 : 0);
+});
